@@ -153,6 +153,7 @@ ggplot(interaction_data, aes(x = light, y = proportion, fill = injury)) +
 
 @fig-visibilityandlight The facet grid visualization reveals the interaction between visibility and light conditions on injury severity. Under poor visibility (fog), dark conditions show a noticeably higher proportion of severe injuries (Fatal, Major) compared to daylight, indicating the compounded risk of low visibility and inadequate lighting. In contrast, clear visibility with daylight consistently shows the lowest proportions of severe injuries, emphasizing the protective role of good environmental conditions. These findings will help guide the inclusion of visibility and light in the predictive model, ensuring it accounts for the impact of environmental factors on injury outcomes. This approach will improve the model's ability to identify scenarios with higher risks of severe injuries.
 
+\newpage
 
 ### Driver conditions
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
@@ -225,6 +226,7 @@ ggplot(filtered_data, aes(x = impactype, y = proportion, fill = injury)) +
 
 @fig-impacttype The stacked bar chart reveals the proportion of injury severities across the top five collision impact types, providing insight into how different types of collisions relate to injury outcomes. For instance, pedestrian collisions show a significantly higher proportion of severe injuries (Fatal and Major), while rear-end collisions are dominated by minor or no injuries. This exploration is critical for our paper as it identifies which collision types pose the greatest risk of severe outcomes, helping us understand the underlying patterns of injury severity. By focusing on this relationship, we address a core question of our study: how specific predictors, such as impact type, influence injury severity.
 
+\newpage
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-violin
@@ -393,6 +395,7 @@ kable(occurrence_table,
 
 @tbl-occurrence The Occurrence Model uncovers several noteworthy patterns in predicting the likelihood of injuries in traffic collisions. Among the environmental factors, nighttime conditions (0.131) are associated with a higher likelihood of injury, highlighting the risks associated with reduced visibility and nighttime driving.
 Impact types emerge as the most influential predictors. Single motor vehicle (SMV) incidents show the strongest positive association with injury occurrence (1.224), likely reflecting the dynamics of these collisions, such as loss of control or impacts with stationary objects. Interestingly, cyclist (-0.773) and pedestrian (-0.772) collisions exhibit substantial negative associations with injury occurrence. This might seem contradictory to the findings in our Severity Model, where these types of collisions are strongly linked to severe injuries. However, the explanation may lie in the polarizing nature of these incidents many result in no injury at all or extreme injuries, which could skew their average likelihood of injury occurrence.
+
 Most infrastructure-related variables, such as road classification and traffic control measures, show relatively modest or non-significant effects, with confidence intervals crossing zero. This suggests that their influence on injury occurrence might depend heavily on specific contexts or interactions with other factors. 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
@@ -411,7 +414,6 @@ severity_table <- severity_summary %>%
     'Tail ESS' = 'Tail_ESS'
   )
 
-cat("\nTable 5: Coefficients for Severity Model\n")
 kable(severity_table,
       format = "pipe",
       digits = 3)
