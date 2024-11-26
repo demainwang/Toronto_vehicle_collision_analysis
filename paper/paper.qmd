@@ -2,7 +2,7 @@
 title: "Environmental Conditions and Driver Behavior Shape Collision Outcomes in Toronto"
 subtitle: "A Two-Stage Bayesian Analysis Reveals Infrastructure Factors Predict Crash Occurrence While Driver Actions Determine Severity"
 author: Yitong Wang
-thanks: "Code and data are available at: [https://github.com/RohanAlexander/starter_folder](https://github.com/RohanAlexander/starter_folder)."
+thanks: "Code and data are available at: [https://github.com/demainwang/Toronto_vehicle_collision_analysis](https://github.com/demainwang/Toronto_vehicle_collision_analysis)."
 date: today
 date-format: long
 abstract: "This study employs a two stage bayesian modeling approach to analyze vehicle collision patterns in Toronto, examining how environmental conditions and driver behavior influence both injury occurrence and severity. The first model predicts the probability of injury based on environmental and infrastructural factors, while the second estimates injury severity using driver characteristics and behavior. Analysis of historical collision data from 2006 to 2023 reveals that while environmental conditions primarily influence injury occurrence, driver behavior factors like speeding and alcohol use more strongly affect severity levels. Our dual model analysis providing evidence based guidance for targeting both infrastructure improvements and enforcement strategies to reduce severe collision outcomes."
