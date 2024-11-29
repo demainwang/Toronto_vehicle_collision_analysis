@@ -1,11 +1,11 @@
 ---
-title: "Environmental Conditions and Driver Behavior Shape Collision Outcomes in Toronto"
-subtitle: "A Two-Stage Bayesian Analysis Reveals Infrastructure Factors Predict Crash Occurrence While Driver Actions Determine Severity"
+title: "Environmental Conditions and Driver Behavior Affect Collision Outcomes in Toronto"
+subtitle: "A Two-Stage Bayesian Analysis Shows Infrastructure Factors Predict Crash Occurrence While Driver Actions Determine Severity"
 author: Yitong Wang
 thanks: "Code and data are available at: [https://github.com/demainwang/Toronto_vehicle_collision_analysis](https://github.com/demainwang/Toronto_vehicle_collision_analysis)."
 date: today
 date-format: long
-abstract: "This study employs a two stage bayesian modeling approach to analyze vehicle collision patterns in Toronto, examining how environmental conditions and driver behavior influence both injury occurrence and severity. The first model predicts the probability of injury based on environmental and infrastructural factors, while the second estimates injury severity using driver characteristics and behavior. Analysis of historical collision data from 2006 to 2023 reveals that while environmental conditions primarily influence injury occurrence, driver behavior factors like speeding and alcohol use more strongly affect severity levels. Our dual model analysis providing evidence based guidance for targeting both infrastructure improvements and enforcement strategies to reduce severe collision outcomes."
+abstract: "This study employs a two stage bayesian modeling approach to analyze vehicle collision patterns in Toronto, examining how environmental conditions and driver behavior influence both injury occurrence and severity. The first model predicts the probability of injury based on environmental and infrastructural factors, while the second estimates injury severity using driver characteristics and behavior. Analysis of historical collision data from 2006 to 2023 shows that while environmental conditions primarily influence injury occurrence, driver behavior factors like speeding and alcohol use more strongly affect severity levels. These findings demonstrate the need for a dual-pronged approach to urban safety through targeted infrastructure improvements in high-risk areas to prevent collisions, alongside enhanced enforcement strategies focusing on dangerous driving behaviors. "
 format: pdf
 toc: true
 number-sections: true
@@ -35,39 +35,39 @@ severity_test <- read_parquet(here("data", "03-model_related_data", "severity_te
 
 
 # Introduction
-Vehicle collisions in urban environments represent a significant public health and safety challenge, with particular concern in large metropolitan areas like Toronto where complex traffic patterns and diverse environmental conditions create varying levels of risk. Understanding the factors that contribute to collision occurrence and severity is crucial for urban planning and public safety policy, yet traditional analyses often treat these as a single outcome rather than recognizing their distinct underlying processes. The increasing availability of detailed collision data, combined with advances in statistical modeling, presents an opportunity to develop more nuanced understandings of how different factors influence collision outcomes.
+Vehicle collisions in urban environments represent a significant public health and safety challenge, with particular concern in large metropolitan areas like Toronto where complex traffic patterns and diverse environmental conditions create varying levels of risk. Understanding the factors that contribute to collision occurrence and severity is important for urban planning and public safety policy, yet traditional analyses often treat these as a single outcome rather than recognizing their distinct underlying processes. The increasing availability of detailed collision data, combined with advances in statistical modeling, presents an opportunity to develop more precise understandings of how different factors influence collision outcomes.
 
 This paper aims to address this challenge through a two-stage modeling approach, with the estimand being the predicted probability of injury occurrence and, conditional on an injury occurring, its severity level. Specifically, our first model examines how environmental and infrastructural factors influence the likelihood of injury in a collision, while the second model investigates how driver characteristics and behavior affect injury severity when injuries do occur. By separating these processes, we can better understand how different factors contribute to collision outcomes and identify more targeted intervention opportunities.
 
-Our analysis reveals several distinct and important patterns in how different factors influence collision outcomes. Environmental conditions emerged as the dominant predictors of whether an injury occurs in the first place - particularly reduced visibility during winter months and poor road surface conditions on major arterials. However, once an injury occurs, driver behavior becomes the crucial determinant of severity. Impaired driving and speeding showed strong associations with severe outcomes, especially during nighttime hours and weekends. Road classification provided an interesting counterintuitive finding: while major arterial roads saw more frequent injuries, the injuries on local roads tended to be more severe. Temporal analysis uncovered clear risk patterns, with injury probability peaking during adverse weather conditions on arterials, while severity levels were highest during weekend nights with notable correlations to driver behavior violations. Pedestrian and cyclist collisions showed a particularly concerning pattern, even overall less frequent, they consistently resulted in more severe injuries across all conditions.
+Our analysis shows several distinct and important patterns in how different factors influence collision outcomes. Environmental conditions emerged as the dominant predictors of whether an injury occurs in the first place - particularly reduced visibility during winter months and poor road surface conditions on major arterials. However, once an injury occurs, driver behavior becomes a determinant of severity. Impaired driving and speeding showed strong associations with severe outcomes, especially during nighttime hours and weekends. Road classification provided an interesting counterintuitive finding: while major arterial roads saw more frequent injuries, the injuries on local roads tended to be more severe. Temporal analysis uncovered clear risk patterns, with injury probability peaking during adverse weather conditions on arterials, while severity levels were highest during weekend nights with notable correlations to driver behavior violations. Pedestrian and cyclist collisions showed a particularly concerning pattern, even overall less frequent, they consistently resulted in more severe injuries across all conditions.
 
 By separating environmental triggers from behavioral factors, we uncovered distinct patterns that shape Toronto's traffic safety landscape. Our analysis shows how road design and maintenance decisions directly influence where injuries occur, while enforcement timing determines crash severity. Understanding these relationships helps transportation departments focus their resources where they matter most, from targeted winter maintenance on high risk arterials to enforcement during periods when severe crashes are most likely. Beyond potential safety improvements, this research advances our understanding of urban traffic patterns and provides a foundation for evidence-based policy decisions.
 
 The remainder of this paper is structured as follows:
-@sec-data presents the overview of data (@sec-data-overview), data cleaning process (@sec-data-cleaning), measurement (@sec-data-measure), also for explanations, descriptions, graph summaries of outcome (@sec-data-outcome) and predictor variables (@sec-data-predictor) of the study. @sec-model set up the model and explain the process detailed, including procedure of model set up (@sec-model-setup) and model validation (@sec-model-validate), and also mention the assumption and validation (@sec-model-assumpandlimit) of models. In addition, (@sec-model-alternate) discuss the potential alternative models and its trade offs. Then, @sec-result reveal the prediction outcome and models' performance. @sec-discussion discusses the relation between the data and real world, which talks about the data quality and bias, as well as the potential limitation of our models in a broader context. 
+@sec-data presents the overview of data (@sec-data-overview), data cleaning process (@sec-data-cleaning), measurement (@sec-data-measure), also for explanations, descriptions, graph summaries of outcome (@sec-data-outcome) and predictor variables (@sec-data-predictor) of the study. @sec-model set up the model and explain the process detailed, including procedure of model set up (@sec-model-setup) ,and also mention the assumption and validation (@sec-model-assumpandlimit) of models. In addition, (@sec-model-alternate) discuss the potential alternative models and its trade offs. Then, @sec-result presents the prediction outcome and models' performance. @sec-discussion discusses the relation between the data and real world, which talks about the data quality and bias, as well as the potential limitation of our models in a broader context. 
 
-Appendix includes three parts: [Appendix -@sec-data-methodology] presents collision data methodology overview, [Appendix -@sec-data-idealized] provides detailed idealized methodology for collection improvement; [Appendix -@sec-model-details] presents additional summary and validation in modeling process.
+Appendix includes three parts: [Appendix -@sec-data-methodology] presents collision data methodology overview, [Appendix -@sec-data-idealized] provides detailed idealized methodology for collection improvement; [Appendix -@sec-model-validate_and_details] presents model validation (@sec-model-validate) and additional details in modeling process (@sec-model-detail).
 
 
 # Data {#sec-data}
 ## Overview {#sec-data-overview}
 The data for this analysis comes from Toronto's Motor Vehicle Collision dataset [@toronto_collision_data], accessed through the Toronto Open Data [@opendatatoronto]. The raw dataset contains 14,976 records of vehicle collisions involving killed or different levels injured persons from 2006 to 2023, with 52 variables capturing various aspects of each incident. These include collision characteristics, environmental conditions, road features, and driver factors.
 
-In this study, we utilized statistical language R [@citeR] and several key packages for data processing, analysis, and visualization. The tidyverse package [@tidyverse] facilitated data manipulation, with dplyr [@dplyr] being particularly crucial for data transformation and filtering operations, while visualization was conducted using ggplot2 [@ggplot2]. For efficient and consistent data import, we employed the readr package [@readr]. For handling temporal aspects of collision data, we employes lubridate {@lubridate} to process dates and times.We used here [@here] for reproducible file path management, arrow [@arrow] for efficient data storage and retrieval, and knitr [@knitr] used to provide the better formatting output. For unit testing and code validation, we employed the testthat package [@testthat] which provided a robust framework for testing our functions and ensuring code reliability. Brms package [@brms] plays the significant values for our model construction. 
+In this study, we utilized statistical language R [@citeR] and several key packages for data processing, analysis, and visualization. The tidyverse package [@tidyverse] facilitated data manipulation, with dplyr [@dplyr] for data transformation and filtering operations, while visualization was conducted using ggplot2 [@ggplot2]. For efficient and consistent data import, we employed the readr package [@readr]. For handling temporal aspects of collision data, we employes lubridate (@lubridate) to process dates and times.We used here [@here] for reproducible file path management, arrow [@arrow] for efficient data storage and retrieval, and knitr [@knitr] used to provide the better formatting output. For unit testing and code validation, we employed the testthat package [@testthat] which provided a robust framework for testing our functions and ensuring code reliability. Brms package [@brms] plays the significant values for our model construction. 
 For Bayesian analysis visualization, we employed bayesplot [@bayesplot] to create diagnostic plots including MCMC trace plots. For model evaluation, we employed the pROC package [@pROC] to generate receiver operating characteristic ROC curves and assess model performance. For model visualization and interpretation, we used the modelsummary package [@modelsummary] to create coefficient plots and model summaries.
 
 ## Data Cleaning {#sec-data-cleaning}
-From the raw dataset, we selected 14 key variables most relevant to understanding collision severity patterns: date, time, road_class (road classification), accloc (accident location), traffctl (traffic control), visibility, light, rdsfcond (road surface condition), impactype (impact type), invage (involved person's age), injury (severity), speeding, ag_driv (aggressive driving), alcohol, and disability. Records with missing values in critical fields such as injury severity, visibility, or road classification were removed to ensure data quality.
+From the raw dataset, we selected 14 key variables most relevant to understanding collision severity patterns: date, time, road_class (road classification), accloc (accident location), traffctl (traffic control), visibility, light, rdsfcond (road surface condition), impactype (impact type), invage (involved person's age), injury (severity), speeding, ag_driv (aggressive driving), alcohol, and disability. Records with missing values in important fields such as injury severity, visibility, or road classification were removed to ensure data quality.
 
-In addition to removing rows with missing NA values, we also excluded records where key categorical variables were explicitly recorded as "None" despite an incident occurring. This includes records where accident location (accloc), road classification (road_class), traffic control (traffctl), visibility, light conditions (light), road surface condition (rdsfcond), and impact type (impactype) were recorded as "None". These "None" entries differ from missing values as they were actively recorded but indicate potentially incomplete or unclear documentation of the collision circumstances. This additional cleaning step ensures our analysis is based on collisions with well-documented characteristics, though it reduced our dataset by approximately 8% (1,057 records). This filtering helps maintain data quality and supports more reliable analysis of factor relationships with collision severity.
+In addition to removing rows with missing NA values, we also excluded records where key categorical variables were explicitly recorded as "None" despite an incident occurring. This includes records where accident location (accloc), road classification (road_class), traffic control (traffctl), visibility, light conditions (light), road surface condition (rdsfcond), and impact type (impactype) were recorded as "None". These "None" entries differ from missing values as they were actively recorded but indicate potentially incomplete or unclear documentation of the collision circumstances. This additional cleaning step ensures our analysis is based on collisions with well-documented characteristics, though it reduced our dataset by approximately 8% (1,057 records).
 
 
 ## Measurement {#sec-data-measure}
-The transformation of real-world collision incidents into structured data points follows a rigorous protocol established by Toronto Police Services. When a collision occurs, first responders and investigating officers collect data through a standardized Motor Vehicle Accident Report Form. This form ensures systematic documentation of collision characteristics, converting complex real-world events into quantifiable measurements. For instance, injury severity classification follows specific criteria: fatalities are recorded when death occurs within 30 days of collision, major injuries are those requiring hospitalization, minor injuries need medical attention but no hospitalization, and minimal injuries indicate no significant medical intervention was required. This standardized approach helps maintain consistency in severity classification across different incidents and responding officers [@toronto_police_services_ksi_guide].
+The transformation of real-world collision incidents into structured data follows a rigorous protocol established by Toronto Police Services. When a collision occurs, first responders and investigating officers collect data through a standardized Motor Vehicle Accident Report Form. This form ensures systematic documentation of collision characteristics, converting complex real-world events into quantifiable measurements. For instance, injury severity classification follows specific criteria: fatalities are recorded when death occurs within 30 days of collision, major injuries are those requiring hospitalization, minor injuries need medical attention but no hospitalization, and minimal injuries indicate no significant medical intervention was required. This standardized approach helps maintain consistency in severity classification across different incidents and responding officers [@toronto_police_services_ksi_guide].
 
 Environmental and situational measurements are recorded at the time of collision through both objective and subjective assessments. Objective measurements include temporal factors (date, time), location (coordinates, road type), and certain environmental conditions (light, road conditions). However, some measurements inherently involve officer judgment, such as assessing visibility conditions (Clear, Rain, Snow) or driver behavior (aggressive driving, speeding). These assessments, while guided by training and protocols, may introduce some variability in how similar conditions are classified across different incidents [@mvcr_guide]. For example, what one officer considers "aggressive driving" might be classified differently by another, highlighting the importance of considering potential measurement inconsistencies in our analysis.
 
-Some driver related factors present particular measurement challenges due to their complex nature. Alcohol involvement is measured through standardized tests when possible, and it providing more objective data. However, other driver conditions like fatigue or distraction often rely on post incident interviews and officer's observation, which introducing potential reporting biases. Additionally, factors like driver age and license status are verified through official documentation, ensuring accuracy in demographic data. The measurement process also captures infrastructure characteristics such as road classification and traffic control presence, which are determined through existing municipal records and on-site verification. This multi-faceted approach to data collection, while comprehensive, means that the quality and reliability of different variables may vary depending on the objectivity of their measurement methods.
+Some driver related factors present particular measurement challenges due to their complex nature. Alcohol involvement is measured through standardized tests if it is possible, and it providing more objective data. However, other driver conditions like fatigue or distraction often rely on post incident interviews and officer's observation, which introducing potential reporting biases. Additionally, factors like driver age and license status are verified through official documentation, ensuring accuracy in demographic data. The measurement process also captures infrastructure characteristics such as road classification and traffic control presence, which are determined through existing municipal records and on site verification. Even this multi faceted approach makes data is well covered, it also means the quality and reliability of different variables may vary depending on the objectivity of their measurement methods.
 
 ## Outcome variables {#sec-data-outcome}
 Our primary outcome variable is injury severity, which classifies the most severe injury in each collision incident into five ordered categories. These categories progress from "None" (no significant injury), through "Minimal" (minor scrapes or bruises requiring no medical attention), "Minor" (requiring some medical attention but no hospitalization), "Major" (requiring hospitalization), to "Fatal" (death occurring within 30 days of the collision).
@@ -86,7 +86,7 @@ cleaned_data %>%
         axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_y_continuous(labels = scales::comma)
 ```
-@fig-outcome The primary outcome variable in our analysis is collision severity, represented through an ordered factor ranging from "None" to "Fatal". It illustrates the distribution of injury severity across all recorded incidents. The data reveals an interesting bimodal distribution in collision outcomes, with concentrations at both ends of the severity spectrum. Major injuries and no injuries represent the most frequent outcomes, accounting for 40.1% and 38.9% of incidents respectively. Fatal collisions comprise 6.3% of the dataset, while minor and minimal injuries together represent approximately 15% of cases.
+@fig-outcome The primary outcome variable in our analysis is collision severity, represented through an ordered factor ranging from "None" to "Fatal". It illustrates the distribution of injury severity across all recorded incidents. The data shows an interesting bimodal distribution in collision outcomes, with concentrations at both ends of the severity spectrum. Major injuries and no injuries represent the most frequent outcomes, accounting for 40.1% and 38.9% of incidents respectively. Fatal collisions comprise 6.3% of the dataset, while minor and minimal injuries together represent approximately 15% of cases.
 
 ## Predictor variables {#sec-data-predictor}
 This study incorporates thirteen predictor variables spanning temporal, environmental, infrastructural, and human factors. Temporal aspects are captured through date and time of collision occurrence. Environmental conditions are measured through three variables: visibility (recording conditions such as Clear, Rain, or Snow), light (indicating natural light conditions like Daylight, Dusk, or Dark), and rdsfcond (road surface condition, noting whether the road was Dry, Wet, or covered in Snow/Ice). Infrastructure characteristics are represented by road_class (categorizing roads as Major Arterial, Minor Arterial, Collector, Local, or Expressway), accloc (specifying whether the collision occurred at an intersection, mid-block, or other location), and traffctl (indicating the type of traffic control present, such as signals or signs). The human element is captured through five variables: invage (age of persons involved), speeding (indicating whether speeding was a factor), ag_driv (noting aggressive driving behavior), alcohol (indicating alcohol involvement), and disability (noting any relevant disabilities). Finally, impactype describes the nature of the collision, such as rear-end, angle, or turning movement.
@@ -106,7 +106,7 @@ cleaned_data %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-@fig-visibility Visibility factor plays a crucial role in collision outcomes. Figure 2 presents the relationship between visibility conditions and collision severity. Clear conditions account for the majority of recorded incidents (86.4%), while poor visibility conditions (including rain, snow, and freezing rain) represent 10.5% of cases. Notably, the proportion of severe injuries increases under poor visibility conditions, suggesting a significant relationship between environmental conditions and collision outcomes.
+@fig-visibility Visibility factor plays a important role in collision outcomes. It presents the relationship between visibility conditions and collision severity. Clear conditions account for the majority of recorded incidents (86.4%), while poor visibility conditions (including rain, snow, and freezing rain) represent 10.5% of cases. Notably, the proportion of severe injuries increases under poor visibility conditions, suggesting a significant relationship between environmental conditions and collision outcomes.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-road
@@ -123,7 +123,7 @@ cleaned_data %>%
   scale_y_continuous(labels = scales::comma)
 ```
 
-@fig-road Road classification and traffic control measures represent important infrastructure factors in our analysis. Figure 3 illustrates the distribution of collisions across different road types and their associated severity levels. Major arterial roads account for 71.3% of all collisions, followed by minor arterial roads at 15.7%. This distribution likely reflects both traffic volume and speed limits on these road types. The relationship between road classification and injury severity reveals important patterns for urban safety planning.
+@fig-road illustrates the distribution of collisions across different road types and their associated severity levels. Major arterial roads account for 71.3% of all collisions, followed by minor arterial roads at 15.7%. This distribution likely reflects both traffic volume and speed limits on these road types.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-visibilityandlight
@@ -148,10 +148,10 @@ ggplot(interaction_data, aes(x = light, y = proportion, fill = injury)) +
     fill = "Injury Severity"
   ) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(size = 6, angle = 45, hjust = 1))
 ```
 
-@fig-visibilityandlight The facet grid visualization reveals the interaction between visibility and light conditions on injury severity. Under poor visibility (fog), dark conditions show a noticeably higher proportion of severe injuries (Fatal, Major) compared to daylight, indicating the compounded risk of low visibility and inadequate lighting. In contrast, clear visibility with daylight consistently shows the lowest proportions of severe injuries, emphasizing the protective role of good environmental conditions. These findings will help guide the inclusion of visibility and light in the predictive model, ensuring it accounts for the impact of environmental factors on injury outcomes. This approach will improve the model's ability to identify scenarios with higher risks of severe injuries.
+@fig-visibilityandlight The facet grid visualization presents the interaction between visibility and light conditions on injury severity. Under poor visibility (fog), dark conditions show a noticeably higher proportion of severe injuries (Fatal, Major) compared to daylight, indicating the compounded risk of low visibility and inadequate lighting. In contrast, clear visibility with daylight consistently shows the lowest proportions of severe injuries, emphasizing the protective role of good environmental conditions. These findings will help guide the inclusion of visibility and light in the predictive model, ensuring it accounts for the impact of environmental factors on injury outcomes.
 
 \newpage
 
@@ -185,7 +185,7 @@ ggplot(proportional_data, aes(x = injury, y = proportion, group = status, color 
     panel.grid.minor = element_blank()
   )
 ```
-@fig-behaviors The proportional line chart compares injury severity distributions for drivers involved in risky behaviors (speeding, alcohol use, aggressive driving) versus those who were not. It reveals that drivers engaged in these behaviors often have higher proportions of severe injuries, such as Fatal or Major, compared to those who did not. However, the results may be influenced by sample size imbalances, as there are likely fewer drivers in the "Yes" group for alcohol or aggressive driving, which could exaggerate proportions and introduce bias. Despite these limitations, the chart provides valuable insights into the heightened risks associated with these behaviors
+@fig-behaviors The proportional line chart compares injury severity distributions for drivers involved in risky behaviors (speeding, alcohol use, aggressive driving) versus those who were not. It shows that drivers engaged in these behaviors often have higher proportions of severe injuries, such as Fatal or Major, compared to those who did not. However, the results may be influenced by sample size imbalances, as there are likely fewer drivers in the "Yes" group for alcohol or aggressive driving, which could exaggerate proportions and introduce bias.
 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
@@ -224,7 +224,7 @@ ggplot(filtered_data, aes(x = impactype, y = proportion, fill = injury)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-@fig-impacttype The stacked bar chart reveals the proportion of injury severities across the top five collision impact types, providing insight into how different types of collisions relate to injury outcomes. For instance, pedestrian collisions show a significantly higher proportion of severe injuries (Fatal and Major), while rear-end collisions are dominated by minor or no injuries. This exploration is critical for our paper as it identifies which collision types pose the greatest risk of severe outcomes, helping us understand the underlying patterns of injury severity. By focusing on this relationship, we address a core question of our study: how specific predictors, such as impact type, influence injury severity.
+@fig-impacttype The stacked bar chart demonstrates the proportion of injury severities across the top five collision impact types, providing understand for how different types of collisions relate to injury outcomes. For instance, pedestrian collisions show a significantly higher proportion of severe injuries (Fatal and Major), while rear-end collisions are dominated by minor or no injuries.
 
 \newpage
 
@@ -250,13 +250,13 @@ ggplot(cleaned_data, aes(x = injury, y = invage)) +
 \newpage
 
 # Model {#sec-model}
-This study employs a two-stage modeling approach to understand and predict traffic injury outcomes, a model for injury occurrence prediction and another model for injury severity prediction when injuries occur. Both models were implemented using the brms package [@brms] in R, leveraging its robust framework for Bayesian regression modeling. The dual-model Bayesian framework precisely analyze traffic injuries, separating the prediction of injury occurrence from injury severity assessment. This approach allows us to isolate and examine the distinct factors that influence whether an injury occurs and, subsequently, how severe that injury becomes. By developing separate models for these two aspects, we can better understand the complex dynamics of traffic accidents and provide more targeted insights for safety interventions.
+This study employs a two-stage modeling approach to understand and predict traffic injury outcomes, a model for injury occurrence prediction and another model for injury severity prediction when injuries occur. Both models were implemented using the brms package [@brms] in R, the dual-model Bayesian framework precisely analyze traffic injuries, separating the prediction of injury occurrence from injury severity assessment. This approach allows us to isolate and examine the distinct factors that influence whether an injury occurs and, subsequently, how severe that injury becomes. By developing separate models for these two aspects, we can better understand the complex dynamics of traffic accidents.
 
 ## Model set-up {#sec-model-setup}
 ### Injury occurence model
 For our injury occurrence model, we implemented a fundamental binary transformation that distinguishes between collisions resulting in any injury and those without injury. In this classification scheme, we designated all collisions with "None" injury classification as our negative outcome ("No injury occurred"). Conversely, we grouped all other injury levels - Minimal, Minor, Major, and Fatal - into our positive outcome ("Injury occurred"). This transformation collapses the rich variety of injury outcomes into a simple binary indicator focusing solely on injury occurrence.
 
-This model addresses the binary outcome of injury occurrence through a Bayesian logistic regression framework. Let $Y_i$ represent the injury outcome for observation $i$, where $Y_i = 1$ indicates an injury occurred and $Y_i = 0$ indicates no injury. The probability of injury is modeled through a Bernoulli distribution:
+Let $Y_i$ represent the injury outcome for observation $i$, where $Y_i = 1$ indicates an injury occurred and $Y_i = 0$ indicates no injury. The probability of injury is modeled through a Bernoulli distribution:
 
 $$Y_i = 
 \begin{cases} 
@@ -269,12 +269,12 @@ $$Y_i =
 **$\text{logit}(p_i) = \beta_0 + \beta_1\text{Visibility}_i + \beta_2\text{Light}_i + \beta_3\text{RoadCondition}_i + \beta_4\text{RoadClass}_i + \beta_5\text{Location}_i + \beta_6\text{TrafficControl}_i + \beta_7\text{RushHour}_i + \beta_8\text{Weekend}_i + \beta_9\text{ImpactType}_i$**
 
 The occurrence model prioritizes environmental and infrastructural factors, drawing on established traffic safety literature and the patterns observed in our exploratory data analysis. Environmental conditions are represented through visibility, light conditions, and road surface state, each categorized to capture fundamental differences while maintaining model parsimony. We consolidate visibility into a binary indicator (Good/Poor) based on detailed weather conditions, simplify lighting into day/night categories from six original conditions, and classify road conditions as good or poor based on surface characteristics.
-Infrastructure factors incorporate the physical and operational aspects of the road environment. Road classification follows a hierarchical structure (Major/Minor/Local) that reflects traffic volume and design standards. Location type captures the crucial distinction between intersections, private drives, and other locations, while traffic control variables account for the presence and type of traffic management systems. Additionally, temporal factors such as rush hour periods and weekend indicators are included to capture systematic variations in traffic patterns.
+Infrastructure factors incorporate the physical and operational aspects of the road environment. Road classification follows a hierarchical structure (Major/Minor/Local) that reflects traffic volume and design standards. Location type captures the distinction between intersections, private drives, and other locations, while traffic control variables account for the presence and type of traffic management systems. Additionally, temporal factors such as rush hour periods and weekend indicators are included to capture systematic variations in traffic patterns.
 
 ### Injury severity model
-Our severity model employs a more nuanced approach, focusing exclusively on collisions where injuries occurred. We first excluded all cases classified as "None" injury, as these fall outside the scope of severity analysis. Among injury cases, we created a binary classification that distinguishes between severe and minor injuries. We classified "Fatal" and "Major" injuries as "Severe" outcomes, while grouping "Minimal" and "Minor" injuries as "Minor" outcomes.
+Our severity model is focusing exclusively on collisions where injuries occurred. We first excluded all cases classified as "None" injury, as these fall outside the scope of severity analysis. Among injury cases, we created a binary classification that distinguishes between severe and minor injuries. We classified "Fatal" and "Major" injuries as "Severe" outcomes, while grouping "Minimal" and "Minor" injuries as "Minor" outcomes.
 
-For cases where injuries occur, our second model examines severity levels using an ordered logistic regression approach. The severity outcome $S_i$ is modeled as:
+For cases where injuries occur, the severity outcome $S_i$ is modeled as:
 
 $$S_i = 
 \begin{cases}
@@ -287,73 +287,7 @@ $$S_i =
 **$\text{logit}(q_i) = \alpha_0 + \alpha_1\text{Speeding}_i + \alpha_2\text{AggressiveDriving}_i + \alpha_3\text{Alcohol}_i + \alpha_4\text{Disability}_i + \alpha_5\text{AgeGroup}_i + \alpha_6\text{Impact}_i + \alpha_7\text{Light}_i + \alpha_8\text{RoadClass}_i$**
 
 The severity model emphasizes driver behavioral and impact factors that influence injury outcomes once an accident occurs. Driver behavior variables include binary indicators for speeding, aggressive driving, alcohol involvement, and driver disability. Age groups are categorized to capture the varying vulnerability and risk patterns across different life stages, while maintaining sufficient group sizes for reliable estimation.
-Impact characteristics play a crucial role in determining injury severity. The model incorporates impact type as a categorical variable distinguishing between pedestrian, cyclist, rear-end, and angle collisions, each representing distinct injury risk patterns. Environmental conditions are represented through light conditions and road classification, which can moderate the relationship between impact forces and resulting injuries.
-
-
-## Model validation {#sec-model-validate}
-Our validation approach employs a sophisticated stratified sampling methodology, dividing the data into training (70%) and testing (30%) sets while carefully maintaining the original class proportions. This strategy is particularly crucial given the inherently imbalanced nature of traffic injury data. The validation framework encompasses multiple complementary approaches, including confusion matrix analysis for understanding classification performance, receiver operating characteristic (ROC) curve analysis for assessing discriminative ability. We further ensure model stability through comprehensive cross validation procedures. Prior to model fitting, we conducted thorough multicollinearity assessments using Variance Inflation Factors, confirming the independence of our predictor variables.
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-#| label: fig-posterior
-#| fig-cap: "Posterior Predictive Check for Injury Occurrence Model"
-pp_check(occurrence_model, type = "bars", ndraws = 100) +
-  ggtitle("Posterior Predictive Check for Injury Occurrence Model")
-```
-@fig-posterior The posterior predictive check plot demonstrates the model's ability to replicate the binary nature of injury occurrence data. The blue dots (yrep) represent simulated data from the posterior predictive distribution, while the light blue bars (y) show the actual observed data distribution. The plot reveals two clear peaks around 0 and 1, corresponding to no-injury and injury cases respectively, with the simulated data closely matching the observed distribution. The alignment between predicted and actual counts at both peaks suggests that the model effectively captures the underlying binary structure of injury occurrences while maintaining appropriate uncertainty in its predictions.
-
-\newpage
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-#| label: fig-trace_o1
-#| fig-cap: "Trace Plots for first 7 parameters in Injury Occurrence Model"
-# First 7 parameters
-mcmc_trace(as_draws(occurrence_model), 
-          regex_pars = "b_(Intercept|visibilityPoor|lightNight|rdsfcondPoor|road_classMajor|road_classMinor|acclocOther)") +
-          ggtitle("Trace Plots for Injury Occurrence Model - Part 1")
-```
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-#| label: fig-trace_o2
-#| fig-cap: "Trace Plots for middle 7 parameters in Injury Occurrence Model"
-# Next 7 parameters
-mcmc_trace(as_draws(occurrence_model), 
-          regex_pars = "b_(acclocPrivate|traffctlOther|traffctlSignal|traffctlStop|impactypeApproaching|impactypeCyclistCollisions|impactypeOther)") +
-          ggtitle("Trace Plots for Injury Occurrence Model - Part 2")
-```
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-#| label: fig-trace_o3
-#| fig-cap: "Trace Plots for last 6 parameters in Injury Occurrence Model"
-# Last 8 parameters
-mcmc_trace(as_draws(occurrence_model), 
-          regex_pars = "b_(impactypePedestrianCollisions|impactypeRearEnd|impactypeSideswipe|impactypeSMVOther|impactypeSMVUnattendedVehicle|impactypeTurningMovement)") +
-          ggtitle("Trace Plots for Injury Occurrence Model - Part 3")
-```
-
-@fig-trace_o1, @fig-trace_o2, @fig-trace_o3 The trace plots display stable mixing patterns across all model parameters over iterations. The four MCMC chains, shown in different blue shades, consistently overlap and explore similar value ranges, indicating good convergence. The stable patterns and lack of trending in the sampling trajectories suggest reliable parameter estimation. Environmental factors show relatively narrow ranges, while impact type coefficients exhibit wider ranges, reflecting their relative importance in predicting injury occurrence. 
-
-\newpage
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-#| label: fig-trace_s1
-#| fig-cap: "Trace Plots for first six parameters in Injury Secerity Model"
-# First plot - first group of parameters
-mcmc_trace(as_draws(severity_model), 
-          regex_pars = "b_(Intercept|speeding|ag_driv|alcohol|disability|age)") +
-          ggtitle("Trace Plots for Injury Severity Model - Part 1")
-```
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-#| label: fig-trace_s2
-#| fig-cap: "Trace Plots for rest parameters in Injury Secerity Model"
-# Second plot - second group of parameters
-mcmc_trace(as_draws(severity_model), 
-          regex_pars = "b_(impact|light|road)") +
-          ggtitle("Trace Plots for Injury Severity Model - Part 2")
-```
-@fig-trace_s1, @fig-trace_s2 The trace plots for various model parameters display stable MCMC sampling convergence across all four chains (represented in different shades of blue). Each parameter's trace shows consistent exploration within its respective range without any concerning patterns or trends, indicating good mixing of the chains. The overlapping nature of the chains and their stationary behavior throughout the sampling period provides strong evidence that the model has reached convergence and the posterior distributions are reliable estimates of the true parameter values.
-
-\newpage
+Impact characteristics play a imporatant role in determining injury severity. The model incorporates impact type as a categorical variable distinguishing between pedestrian, cyclist, rear-end, and angle collisions, each representing distinct injury risk patterns. Environmental conditions are represented through light conditions and road classification, which can moderate the relationship between impact forces and resulting injuries.
 
 ## Model assumption and limitation {#sec-model-assumpandlimit}
 Both models operate under several key assumptions that warrant discussion. The independence of observations assumption may be partially violated due to spatial and temporal clustering of accidents, though our inclusion of location and time-based variables helps mitigate this concern. While multicollinearity was assessed and addressed during variable selection, some residual correlation between predictors may remain.
@@ -369,57 +303,36 @@ The final dual-model approach was selected for its balance of theoretical ground
 
 # Results {#sec-result}
 ## Model result
-Our dual-model analysis of traffic injuries reveals distinct patterns in both injury occurrence and severity prediction, with both models demonstrating strong predictive performance across different scenarios and conditions. Key findings from our models reveal the relative importance of different predictors in determining both injury occurrence and severity, and we summarise it in the follow coefficients tables and ROC curve plot.
+Our dual model analysis of traffic injuries demonstrates distinct patterns in both injury occurrence and severity prediction, key findings from our models show the relative importance of different predictors in determining both injury occurrence and severity, and we summarise it in the follow tables and ROC curve plot.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-#| label: tbl-occurrence
-#| tbl-cap: "Occurrence Model Coefficients"
-# For occurrence model
-occurrence_summary <- as.data.frame(summary(occurrence_model)$fixed)
-occurrence_table <- occurrence_summary %>%
-  rownames_to_column("Variable") %>%
-  select(Variable, Estimate, `Est.Error`, `l-95% CI`, `u-95% CI`, `Bulk_ESS`, `Tail_ESS`) %>%
-  rename(
-    'Std. Error' = 'Est.Error',
-    'Lower CI' = 'l-95% CI',
-    'Upper CI' = 'u-95% CI',
-    'Bulk ESS' = 'Bulk_ESS',
-    'Tail ESS' = 'Tail_ESS'
-  )
-
-# Create formatted tables
-kable(occurrence_table,
-      format = "pipe",
-      digits = 3)
+#| label: tbl-summary_modeloccurrence
+#| tbl-cap: "Summary for Occurrence model"
+modelsummary(
+  occurrence_model,
+  output = "kableExtra",
+) 
 ```
 
-@tbl-occurrence The Occurrence Model uncovers several noteworthy patterns in predicting the likelihood of injuries in traffic collisions. Among the environmental factors, nighttime conditions (0.131) are associated with a higher likelihood of injury, highlighting the risks associated with reduced visibility and nighttime driving.
+@tbl-summary_modeloccurrence The Occurrence Model uncovers several noteworthy patterns in predicting the likelihood of injuries in traffic collisions. Among the environmental factors, nighttime conditions (0.131) are associated with a higher likelihood of injury, highlighting the risks associated with reduced visibility and nighttime driving.
 Impact types emerge as the most influential predictors. Single motor vehicle (SMV) incidents show the strongest positive association with injury occurrence (1.224), likely reflecting the dynamics of these collisions, such as loss of control or impacts with stationary objects. Interestingly, cyclist (-0.773) and pedestrian (-0.772) collisions exhibit substantial negative associations with injury occurrence. This might seem contradictory to the findings in our Severity Model, where these types of collisions are strongly linked to severe injuries. However, the explanation may lie in the polarizing nature of these incidents many result in no injury at all or extreme injuries, which could skew their average likelihood of injury occurrence.
 
 Most infrastructure-related variables, such as road classification and traffic control measures, show relatively modest or non-significant effects, with confidence intervals crossing zero. This suggests that their influence on injury occurrence might depend heavily on specific contexts or interactions with other factors. 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-#| label: tbl-severity
-#| tbl-cap: "Severity Model Coefficients"
-# For severity model
-severity_summary <- as.data.frame(summary(severity_model)$fixed)
-severity_table <- severity_summary %>%
-  rownames_to_column("Variable") %>%
-  select(Variable, Estimate, `Est.Error`, `l-95% CI`, `u-95% CI`, `Bulk_ESS`, `Tail_ESS`) %>%
-  rename(
-    'Std. Error' = 'Est.Error',
-    'Lower CI' = 'l-95% CI',
-    'Upper CI' = 'u-95% CI',
-    'Bulk ESS' = 'Bulk_ESS',
-    'Tail ESS' = 'Tail_ESS'
-  )
+\newpage
 
-kable(severity_table,
-      format = "pipe",
-      digits = 3)
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: tbl-summary_modelseverity
+#| tbl-cap: "Summary for Severity model"
+modelsummary(
+  severity_model,
+  output = "kableExtra",
+) 
 ```
 
-@tbl-severity The results of the Severity Model reveal important insights into the factors contributing to severe injuries in motor vehicle collisions. Collisions involving cyclists (2.31) and pedestrians (1.73) stand out as the most significant predictors of severe outcomes, emphasizing the heightened vulnerability of these road users. Senior individuals are also more likely to experience severe injuries, reflecting the increased physical fragility of this age group. Interestingly, collisions on minor roads are associated with a higher likelihood of severe injuries, possibly due to less stringent traffic control measures or more complex road layouts. On the other hand, factors like speeding and alcohol involvement, while often associated with risky driving behaviors, did not show a strong connection to injury severity in this dataset.
+@tbl-summary_modelseverity The model analysis is based on 4,572 cases that injury happened in collision, with an R-squared value of 0.111 indicating that about 11.1% of the variance in injury severity is explained by the included predictors. Collisions involving cyclists (2.31) and pedestrians (1.73) stand out as the most significant predictors of severe outcomes, emphasizing the heightened vulnerability of these road users. Senior individuals are also more likely to experience severe injuries, reflecting the increased physical fragility of this age group. Interestingly, collisions on minor roads are associated with a higher likelihood of severe injuries, possibly due to less stringent traffic control measures or more complex road layouts. On the other hand, factors like speeding and alcohol involvement, while often associated with risky driving behaviors, did not show a strong connection to injury severity in this dataset.
+
+\newpage
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-roc
@@ -435,11 +348,11 @@ roc_severity <- roc(severity_test$injury_severity, severity_mean_probs)
 plot(roc_severity, main = "ROC Curve for Injury Severity Model")
 ```
 
-@fig-roc The ROC curve demonstrates the model's discriminative ability across different classification thresholds. The curve rises sharply from the origin and maintains considerable distance from the diagonal reference line (which represents random guess), indicating strong predictive power. The smooth progression of the curve suggests stable performance across various sensitivity-specificity trade-offs, while its position well above the diagonal line confirms the model's robust ability to distinguish between injury severity classes.
+@fig-roc The ROC curve demonstrates the model's discriminative ability across different classification thresholds. The curve rises sharply from the origin and maintains considerable distance from the diagonal reference line (which represents random guess), indicating strong predictive power. The smooth progression of the curve suggests stable performance across various sensitivity-specificity trade offs, while its position well above the diagonal line confirms the model's robust ability to distinguish between injury severity classes.
 
 
 ## Prediction example
-Our prediction analysis utilizes scenario-based datasets (occurrence_scenarios and severity_scenarios) constructed with expand_grid to systematically explore various combinations of environmental, infrastructural, and behavioral conditions. By inputting these scenarios into our models, we generate predicted probabilities of injury occurrence and severity across a comprehensive range of real-world situations.
+Our prediction analysis utilizes scenario-based datasets (occurrence_scenarios and severity_scenarios) to systematically explore various combinations of environmental, infrastructural, and behavioral conditions. By inputting these scenarios into our models, we generate predicted probabilities of injury occurrence and severity across a rich range of real world situations.
 
 To evaluate the injury severity model's predictive performance, we compared actual outcomes with predicted probabilities using the test dataset. The follow plot displays the relationship between actual injury severity outcomes and the predicted probabilities generated by the model.
 
@@ -468,15 +381,21 @@ ggplot(severity_test, aes(x = predicted_prob, y = actual)) +
   theme_minimal()
 ```
 
-@fig-avp The actual versus predicted probabilities plot for the injury severity model reveals a strong predictive performance, with observations clustering predominantly at either high (around 1.0) or low (around 0.0) probabilities. The blue diagonal line represents perfect prediction, and the pattern of actual outcomes shows clear separation between severity classes, indicating the model's ability to effectively discriminate between minor and severe injuries. This binary clustering pattern is characteristic of a well-calibrated binary classification model.
+@fig-avp The actual versus predicted probabilities plot for the injury severity model shows a strong predictive performance, with observations clustering predominantly at either high (around 1.0) or low (around 0.0) probabilities. The blue diagonal line represents perfect prediction, and the pattern of actual outcomes shows clear separation between severity classes, indicating the model's ability to effectively discriminate between minor and severe injuries. This binary clustering pattern is characteristic of a good calibrated binary classification model.
 
 The plot demonstrates that higher predicted probabilities correspond to actual severe injuries, indicating the model's effectiveness in predicting injury severity. This alignment between predicted probabilities and actual outcomes confirms the model's practical utility in identifying high-risk scenarios.
 Our prediction results are stored in the "models" directory as occurrence_predictions.parquet and severity_predictions.parquet. 
 
 
 # Discussion {#sec-discussion}
+## Potential real world improvement based on result
+Given the heightened risks associated with nighttime conditions and single-vehicle incidents, municipalities should prioritize infrastructure improvements that specifically address these vulnerabilities. This could include implementing street lighting systems in high-risk areas, installing reflective road markers and enhanced signage on curves and potentially hazardous stretches, and deploying smart traffic monitoring systems that adjust speed limits based on visibility conditions. For minor roads, where our analysis shows a concerning pattern of severe injuries, some safety upgrades should include traffic calming measures such as speed humps, raised crosswalks, and chicanes. These improvements, combined with automated enforcement systems, could help mitigate the risks that make these seemingly less-traveled roads particularly dangerous.
+
+The findings also empasis the need for a reformed approach to protecting vulnerable road users and emergency response protocols. Given the high severity coefficients associated with cyclist and pedestrian incidents, cities should invest in protected infrastructure networks that physically separate these vulnerable users from motor vehicle traffic, particularly along high-traffic corridors and near community hubs. Emergency services can enhance their response effectiveness by implementing a tiered dispatch system that automatically elevates the response priority for incidents involving cyclists, pedestrians, and senior citizens - groups our analysis identifies as being at higher risk for severe injuries.
+
+
 ## Data quality and limitations
-Our analysis faces several important limitations related to data quality and collection. The primary collision dataset from opendatatoronto [@opendatatoronto] contains inherent biases in injury reporting. According to the National Highway Traffic Safety Administration's recent report [@nhtsa2023], up to 40% of minor injury accidents go unreported, particularly in cases involving single vehicles or where parties choose to handle incidents privately. This underreporting likely creates a selection bias towards more severe accidents in our dataset, potentially affecting our model's predictions for minor injury scenarios.
+Our analysis faces several important limitations related to data quality and collection. The primary collision dataset from opendatatoronto [@opendatatoronto] contains inherent biases in injury reporting. According to the National Highway Traffic Safety Administration's recent report [@nhtsa2023], lots of case about minor injury accidents go unreported, particularly in cases involving single vehicles or where parties choose to handle incidents privately. This underreporting likely creates a selection bias towards more severe accidents in our dataset, potentially affecting our model's predictions for minor injury scenarios.
 
 Additionally, the geographic distribution of our data shows significant imbalance. Urban areas are typically overrepresented due to better reporting infrastructure and higher population density, while rural accidents may be underreported or documented with less detail. The Insurance Institute for Highway Safety [@iihs2023] notes that rural accidents, despite being fewer in number, often result in more severe injuries due to factors such as emergency response times and road conditions - aspects our current data structure may not fully capture.
 
@@ -488,12 +407,12 @@ The separation of our analysis into occurrence and severity models, while theore
 The model structure also assumes temporal independence between accidents, an assumption that likely doesn't reflect reality. Accident patterns often show temporal correlation, particularly during adverse weather conditions or holiday periods. Our current framework cannot adequately capture these temporal dependencies, potentially overlooking important patterns in accident occurrence and severity.
 
 ## Variable handling challenges
-A significant limitation lies in our variable categorization approach. Environmental conditions are simplified into binary categories (e.g., "Good"/"Poor" visibility, "Day"/"Night" lighting) to maintain model stability and interpretability. However, this simplification may mask important nuances in intermediate conditions. For example, the effect of partial visibility or dusk conditions might differ significantly from either clear or poor visibility, but our current categorization cannot capture these distinctions.
+A significant limitation lies in our variable categorization approach. Environmental conditions are simplified into binary categories (e.g., "Good"/"Poor" visibility, "Day"/"Night" lighting) to maintain model stability and interpretability. However, this simplification may mask important differences in intermediate conditions. For example, the effect of partial visibility or dusk conditions might differ significantly from either clear or poor visibility, but our current categorization cannot capture these distinctions.
 
 The handling of behavioral factors in our models also presents challenges. While we account for factors like speeding and aggressive driving, the binary nature of these variables may oversimplify complex behavioral patterns. Additionally, our reliance on reported data means we can only capture behaviors that were documented at the time of the accident, potentially missing important precursor behaviors or conditions.
 
 ## Future research directions/improvements
-Several promising directions for improvement emerge from our analysis. First, the integration of continuous monitoring data could provide more granular insights into accident patterns. This could include real-time traffic flow data, weather conditions, and road surface measurements, allowing for more nuanced understanding of how environmental conditions affect accident risk.
+Several promising directions for improvement emerge from our analysis. First, the integration of continuous monitoring data could provide more granular understand for accident patterns. This could include real-time traffic flow data, weather conditions, and road surface measurements, allowing for more precise understanding of how environmental conditions affect accident risk.
 
 Alternative modeling approaches, such as hierarchical spatial models or dynamic time series analyses, could better capture the complex dependencies in accident data. The incorporation of spatial correlation structures could improve our understanding of location-specific risks as current research suggests [@plosone_spatial_models], while time-series components could better account for temporal patterns in accident occurrence.
 
@@ -507,16 +426,16 @@ To address the identified limitations, future data collection efforts should pri
 \appendix
 
 # Appendix {-}
-## Data collecting methodology {#sec-data-methodology}
+# Data collecting methodology {#sec-data-methodology}
 The City of Toronto's Motor Vehicle Collision database involving Killed or Seriously Injured Persons (KSI) is collected through a systematic process involving the Toronto Police Service (TPS) as the primary data collector [@toronto_collision_data]. When a collision occurs involving killed or seriously injured persons, police officers must complete a standardized Motor Vehicle Accident Report form. This data is then processed and maintained by the City of Toronto's Transportation Services Division. The collection process follows a standardized protocol outlined in the Motor Vehicle Collision Report (MVCR) manual [@mvcr_guide], which ensures consistency in reporting and classification across all collision events.
 
 The data collection process begins when police officers attend a collision scene and complete the Motor Vehicle Collision Report form (SR-LD-401), which follows a standardized protocol detailed in the Motor Vehicle Collision Report Manual [@mvcr_guide]. This systematic approach ensures consistency in data collection across different incidents and officers. However, this methodology introduces an important selection bias - the dataset only includes collisions where police officers were present and generated a report. Consequently, incidents where involved parties did not contact police or left the scene before police arrival are systematically excluded from the dataset.
 
-A critical aspect of the data collection methodology is its focus on Killed or Seriously Injured (KSI) events. The dataset defines major injury as "a non-fatal injury severe enough to require the injured person to be admitted to hospital, even if only for observation." This includes fractures, internal injuries, severe cuts, crushing, burns, concussion, and severe general shocks. Fatal injuries are defined as deaths occurring within 366 days as a result of the collision, explicitly excluding deaths from natural causes or suicide [@toronto_police_services_ksi_guide]. This definition creates a clear boundary for data inclusion but may underestimate the total impact of traffic collisions by excluding less severe injuries that still have significant societal costs.
+A noticeable aspect of the data collection methodology is its focus on Killed or Seriously Injured (KSI) events. The dataset defines major injury as "a non-fatal injury severe enough to require the injured person to be admitted to hospital, even if only for observation." This includes fractures, internal injuries, severe cuts, crushing, burns, concussion, and severe general shocks. Fatal injuries are defined as deaths occurring within 366 days as a result of the collision, explicitly excluding deaths from natural causes or suicide [@toronto_police_services_ksi_guide]. This definition creates a clear boundary for data inclusion but may underestimate the total impact of traffic collisions by excluding less severe injuries that still have significant societal costs.
 
-The dataset's structure reveals a careful attention to detail in recording various aspects of each collision. Each record represents a person involved in a KSI collision event, regardless of their injury level. This means that a single collision event may have multiple records, one for each person involved. While this provides rich detail about all participants in serious collisions, it creates challenges for analyzing collision events as distinct units without careful data processing to account for duplicate event numbers (ACCNUM).
+The dataset's structure shows a careful attention to detail in recording various aspects of each collision. Each record represents a person involved in a KSI collision event, regardless of their injury level. This means that a single collision event may have multiple records, one for each person involved. While this provides rich detail about all participants in serious collisions, it creates challenges for analyzing collision events as distinct units without careful data processing to account for duplicate event numbers (ACCNUM).
 
-A significant methodological strength is the comprehensive categorization system used for various collision attributes. The dataset includes detailed classifications for environmental conditions, road surface conditions, collision types, and participant behaviors [@toronto_police_services_ksi_guide]. However, this strength is partially offset by the subjective nature of some classifications. For instance, the assessment of "apparent driver action" or "driver condition" relies heavily on officer judgment at the scene, introducing potential observer bias.
+A significant methodological strength is the categorization system used for various collision attributes. The dataset includes detailed classifications for environmental conditions, road surface conditions, collision types, and participant behaviors [@toronto_police_services_ksi_guide]. However, this strength is partially offset by the subjective nature of some classifications. For instance, the assessment of "apparent driver action" or "driver condition" relies heavily on officer judgment at the scene, introducing potential observer bias.
 
 Another notable aspect of the methodology is its handling of spatial data. Each collision is geocoded with latitude and longitude coordinates, enabling spatial analysis. However, the documentation acknowledges that some location data may be approximate, particularly for collisions occurring between major intersections or in areas without clear address points.
 The reason is the balance between public data transparency and privacy protection in administrative data collection. The feature of this methodology is the deliberate offsetting of collision locations to the nearest road intersection node, in order to safeguard the privacy of involved parties [@toronto_collision_data]. This geographic anonymization technique, while serving its primary purpose of privacy protection, introduces spatial imprecision that affects the dataset's geographical analysis capabilities. Consequently, aggregated statistics at the Division and Neighbourhood levels may not precisely reflect the true spatial distribution of collisions. The Toronto Police Service explicitly acknowledges these limitations, cautioning users about potential discrepancies in accuracy, completeness, and timeliness when compared to other crime data sources.
@@ -524,22 +443,253 @@ The reason is the balance between public data transparency and privacy protectio
 The dataset's temporal coverage and update frequency also merit consideration. While historical data is preserved, there is typically a lag time between incident occurrence and data availability in the public dataset, primarily due to the need for verification and processing of police reports. This delay affects the dataset's utility for real-time analysis but ensures higher data quality through proper verification procedures.
 
 
-## Idealized methodology {#sec-data-idealized}
-An idealized methodology for motor vehicle collision data collection must fundamentally reimagine how we gather, validate, and integrate traffic incident information while maintaining robust privacy protections. Drawing from advancements in digital technology and data science, I propose a comprehensive modernization of the current system.
-The cornerstone of this enhanced methodology would be transitioning from paper-based documentation to a sophisticated digital data collection framework. Police officers would utilize specialized mobile devices equipped with purpose-built software that guides them through systematic data collection at collision scenes [@digital_transformation]. This digital transformation would significantly reduce transcription errors while enabling real-time data validation - a crucial improvement over the current SR-LD-401 form system.
+# Idealized methodology {#sec-data-idealized}
+An idealized methodology for motor vehicle collision data collection must fundamentally reimagine how we gather, validate, and integrate traffic incident information while maintaining robust privacy protections. Drawing from advancements in digital technology and data science, we propose a modernization for the current system.
+The cornerstone of this enhanced methodology would be transitioning from paper-based documentation to a sophisticated digital data collection framework. Police officers would utilize specialized mobile devices equipped with purpose-built software that guides them through systematic data collection at collision scenes [@digital_transformation]. This digital transformation would significantly reduce transcription errors while enabling real time data validation, a big improvement over the current SR-LD-401 form system.
 
-Privacy protection in location data requires particular attention and refinement. The current practice of offsetting collision locations to the nearest intersection, while serving its primary purpose, introduces unnecessary spatial imprecision. Advanced geographic anonymization techniques could better balance privacy concerns with analytical precision. For instance, implementing differential privacy algorithms could add calibrated noise to geographic coordinates while preserving statistical accuracy for analysis purposes [@geographic_anonymization].
+Privacy protection in location data requires particular attention and refinement. The current practice of offsetting collision locations to the nearest intersection, while serving its primary purpose, introduces unnecessary spatial imprecision. Some geographic anonymizations techniques could better balance privacy concerns with analytical precision. For instance, implementing differential privacy algorithms could add calibrated noise to geographic coordinates while preserving statistical accuracy for analysis purposes [@geographic_anonymization].
 
-Environmental context represents another area where current methodologies rely heavily on subjective officer assessment. A modernized system would automatically integrate data from multiple validated sources, creating a more objective and comprehensive picture of collision conditions. This would include real-time weather data from official weather stations, traffic volume information from road sensors, and current road condition data from municipal databases. Such integration would provide a more reliable environmental context for each incident.
+Environmental context represents another area where current methodologies rely heavily on subjective officer assessment. A modernized system would automatically integrate data from multiple validated sources, creating a more objective understand of collision conditions. This would include real time weather data from official weather stations, traffic volume information from road sensors, and current road condition data from municipal databases. Such integration would provide a more reliable environmental context for each incident.
 
 Documentation of physical evidence and collision dynamics would benefit from technological advancement as well. Standardized 360-degree photography and LiDAR scanning could provide precise measurements and objective documentation of vehicle damage and scene characteristics [@collision_reconstruction]. Computer vision algorithms could process this visual data to create standardized collision reconstructions, reducing reliance on subjective interpretation and improving consistency across incidents.
 
 To address the current limitation of potential underreporting, the system should incorporate a multi source verification framework. By cross referencing police reports with emergency medical services records, hospital admission data, and insurance claims, while employing privacy-preserving record linkage techniques and the system would capture a more complete picture of collision incidents and their outcomes.
+
 This idealized methodology may require significant investment in technology infrastructure and training, but it represents a necessary evolution in traffic collision data collection, which resulting improvements in data quality and data completeness. 
 
+# Survey of collision patterns recognization in Toronto's residents 
+To gather additional information about vehicle collision patterns in Toronto based on residents, we propose a survey targeted at residents in Toronto. This survey aims to collect data about personal experiences with traffic conditions, observed patterns of dangerous driving, and environmental factors affecting road safety. Below is a survey to collect this information.
 
-## Model details {#sec-model-details}
+What is your age group?
 
+- 16-24
+
+- 25-34
+
+- 35-49
+
+- 50-64
+
+- 65 and above
+
+What is your gender?
+
+- Male
+
+- Female
+
+- Other
+
+- Prefer not to say
+
+
+In which area of Toronto do you primarily drive? (Select all that apply)
+
+- Downtown Core
+
+- North York
+
+- Scarborough
+
+- Etobicoke
+
+How frequently do you drive in Toronto?
+
+- Daily
+
+- Several times per week
+
+- Weekly
+
+- Monthly
+
+- Rarely
+
+
+In your experience, which time periods have the highest collision risk?
+
+- Morning rush hour (7-9 AM)
+
+- Evening rush hour (4-6 PM)
+
+- Late night/early morning
+
+- Weekend afternoons
+
+Which environmental factors do you think most affect driving safety? (Select all that apply)
+
+- Poor visibility
+
+- Wet road conditions
+
+- Snow/ice
+
+- Construction
+
+- Heavy traffic
+
+Based on your experience, which road types seem most prone to collisions?
+
+- Major arterial roads
+
+- Local residential streets
+
+- Highway ramps
+
+- Intersections
+
+Have you noticed any season have more collision happen?
+
+- More incidents in winter
+
+- More incidents in summer
+
+- No seasonal pattern
+
+- Not sure
+
+Which driver behaviors do you most commonly observe that increase collision risk? (Select all that apply)
+
+- Speeding
+
+- Aggressive driving
+
+- Distracted driving
+
+- Following too closely
+
+- Improper turns
+
+- Other
+
+In your opinion, how effective are current traffic control measures (signals, signs, speed limits) in preventing collisions?
+
+- Very effective
+
+- Somewhat effective
+
+- Neutral
+
+- Somewhat ineffective
+
+- Very ineffective
+
+Have you been involved in or witnessed a collision in Toronto in the past 5 years?
+
+- Yes, involved in a collision
+
+- Yes, witnessed a collision
+
+- No
+
+- Prefer not to say
+
+If you answered yes to the previous question, what factors contributed to the collision? (Select all that apply)
+
+- Weather conditions
+
+- Road conditions
+
+- Driver behavior
+
+- Traffic control issues
+
+- Vehicle issues
+
+- Other
+
+# Model validations and details {#sec-model-validate_and_details}
+## Model validation {#sec-model-validate}
+Our validation approach employs a sophisticated stratified sampling methodology, dividing the data into training (70%) and testing (30%) sets while carefully maintaining the original class proportions. This strategy is significant given the inherently imbalanced nature of traffic injury data. The validation framework encompasses multiple complementary approaches, including confusion matrix analysis for understanding classification performance, receiver operating characteristic (ROC) curve analysis for assessing discriminative ability. We further ensure model stability through cross validation procedures. Prior to model fitting, we conducted thorough multicollinearity assessments using Variance Inflation Factors, confirming the independence of our predictor variables.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: fig-posterior
+#| fig-cap: "Posterior Predictive Check for Injury Occurrence Model"
+pp_check(occurrence_model, type = "bars", ndraws = 100) +
+  ggtitle("Posterior Predictive Check for Injury Occurrence Model")
+```
+@fig-posterior The posterior predictive check plot demonstrates the model's ability to replicate the binary nature of injury occurrence data. The blue dots (yrep) represent simulated data from the posterior predictive distribution, while the light blue bars (y) show the actual observed data distribution. The plot shows two clear peaks around 0 and 1, corresponding to no-injury and injury cases respectively, with the simulated data closely matching the observed distribution. The alignment between predicted and actual counts at both peaks suggests that the model effectively captures the underlying binary structure of injury occurrences while maintaining appropriate uncertainty in its predictions.
+
+\newpage
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: fig-trace_o1
+#| fig-cap: "Trace Plots for first 7 parameters in Injury Occurrence Model"
+# First 7 parameters
+mcmc_trace(as_draws(occurrence_model), 
+          regex_pars = "b_(Intercept|visibilityPoor|lightNight|rdsfcondPoor|road_classMajor|road_classMinor|acclocOther)") +
+          ggtitle("Trace Plots for Injury Occurrence Model - Part 1") +
+  theme(axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        axis.title.x = element_text(size = 9),
+        axis.title.y = element_text(size = 9)
+)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: fig-trace_o2
+#| fig-cap: "Trace Plots for middle 7 parameters in Injury Occurrence Model"
+# Next 7 parameters
+mcmc_trace(as_draws(occurrence_model), 
+          regex_pars = "b_(acclocPrivate|traffctlOther|traffctlSignal|traffctlStop|impactypeApproaching|impactypeCyclistCollisions|impactypeOther)") +
+          ggtitle("Trace Plots for Injury Occurrence Model - Part 2") +
+  theme(axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        axis.title.x = element_text(size = 9),
+        axis.title.y = element_text(size = 9)
+)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: fig-trace_o3
+#| fig-cap: "Trace Plots for last 6 parameters in Injury Occurrence Model"
+# Last 8 parameters
+mcmc_trace(as_draws(occurrence_model), 
+          regex_pars = "b_(impactypePedestrianCollisions|impactypeRearEnd|impactypeSideswipe|impactypeSMVOther|impactypeSMVUnattendedVehicle|impactypeTurningMovement)") +
+          ggtitle("Trace Plots for Injury Occurrence Model - Part 3") +
+  theme(axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        axis.title.x = element_text(size = 9),
+        axis.title.y = element_text(size = 9)
+)
+```
+
+@fig-trace_o1, @fig-trace_o2, @fig-trace_o3 The trace plots display stable mixing patterns across all model parameters over iterations. The four MCMC chains, shown in different blue shades, consistently overlap and explore similar value ranges, indicating good convergence. The stable patterns and lack of trending in the sampling trajectories suggest reliable parameter estimation. Environmental factors show relatively narrow ranges, while impact type coefficients exhibit wider ranges, reflecting their relative importance in predicting injury occurrence. 
+
+\newpage
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: fig-trace_s1
+#| fig-cap: "Trace Plots for first six parameters in Injury Secerity Model"
+# First plot - first group of parameters
+mcmc_trace(as_draws(severity_model), 
+          regex_pars = "b_(Intercept|speeding|ag_driv|alcohol|disability|age)") +
+          ggtitle("Trace Plots for Injury Severity Model - Part 1") +
+  theme(axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        axis.title.x = element_text(size = 9),
+        axis.title.y = element_text(size = 9)
+)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: fig-trace_s2
+#| fig-cap: "Trace Plots for rest parameters in Injury Secerity Model"
+# Second plot - second group of parameters
+mcmc_trace(as_draws(severity_model), 
+          regex_pars = "b_(impact|light|road)") +
+          ggtitle("Trace Plots for Injury Severity Model - Part 2") +
+  theme(axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
+        axis.title.x = element_text(size = 9),
+        axis.title.y = element_text(size = 9)
+)
+```
+@fig-trace_s1, @fig-trace_s2 The trace plots for various model parameters display stable MCMC sampling convergence across all four chains (represented in different shades of blue). Each parameter's trace shows consistent within its respective range without any concerning patterns or trends, indicating good mixing of the chains. The overlapping nature of the chains and their stationary behavior throughout the sampling period provides strong evidence that the model has reached convergence and the posterior distributions are reliable estimates of the true parameter values.
+
+\newpage
+
+## Model details {#sec-model-detail}
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-ppo
 #| fig-cap: "Examining how the Injury Occurrence Model fits)"
@@ -563,11 +713,13 @@ fixed_effects <- summary(occurrence_model)$fixed
 
 # Display as a table with kable
 kable(fixed_effects, 
-      format = "markdown",  # Choose the desired format ("markdown", "html", or "latex")
-      digits = 3,           # Round numbers to 3 decimal places
-      col.names = c("Estimate", "Est. Error", "l-95% CI", "u-95% CI", "Rhat", "Bulk ESS", "Tail ESS"), # Rename columns
-      caption = "Summary of Fixed Effects for the Model")
+      format = "markdown",
+      digits = 3,
+      col.names = c("Estimate", "Est. Error", "l-95% CI", "u-95% CI", "Rhat", "Bulk ESS", "Tail ESS")
+)
 ```
+
+\newpage
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #| label: fig-pps
@@ -592,15 +744,13 @@ fixed_effects <- summary(severity_model)$fixed
 
 # Display as a table with kable
 kable(fixed_effects, 
-      format = "markdown",  # Choose the desired format ("markdown", "html", or "latex")
-      digits = 3,           # Round numbers to 3 decimal places
-      col.names = c("Estimate", "Est. Error", "l-95% CI", "u-95% CI", "Rhat", "Bulk ESS", "Tail ESS"), # Rename columns
-      caption = "Summary of Fixed Effects for the Model")
+      format = "markdown",
+      digits = 3,
+      col.names = c("Estimate", "Est. Error", "l-95% CI", "u-95% CI", "Rhat", "Bulk ESS", "Tail ESS")
+)
 ```
 
-
-
-\newpage
+\clearpage
 
 
 # References
