@@ -13,7 +13,7 @@ The repo is structured as:
 -   `data/02-analysis_data` contains the analysis collison data after cleaning.
 -   `data/03-model_data` contains the model related data.
 -   `model` contains two fitted models' rds files. 
--   `other` contains details about LLM chat interactions, sketches, and literature.
+-   `other` contains details about LLM chat interactions, sketches, datasheet and literature.
 -   `paper` contains the files used to generate the paper, including the Quarto document and reference bibliography file, as well as the PDF of the paper. 
 -   `scripts` contains `00-simulate-data.R` scripts used to simulate, `01-test_simulated_data.R` for test simulated data, `02-download_data.R` for data downloading, `03-clean_data.R` for data cleaning, `04-test_analysis_data.R` for test of cleaned data, `05-model_data.R` for model constructing.
 
